@@ -12,7 +12,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, required=True, help="where the dataset is stored")
-parser.add_argument("--dataset_name", type=str, required=True, choices=["kitti_raw_eigen", "kitti_raw_stereo", "kitti_odom", "cityscapes"])
+parser.add_argument("--dataset_name", type=str, required=True, choices=["kitti_raw_eigen", "kitti_raw_stereo", "kitti_odom", "cityscapes","euroc"])
 parser.add_argument("--dump_root", type=str, required=True, help="Where to dump the data")
 parser.add_argument("--seq_length", type=int, required=True, help="Length of each training sequence")
 parser.add_argument("--img_height", type=int, default=128, help="image height")
@@ -27,13 +27,18 @@ def concat_image_seq(seq):
         else:
             res = np.hstack((res, im))
     return res
-
+# data_loader的接口：
+# 一个是num_train
+# 一个是get_train_example_with_idx(n)
 def dump_example(n, args):
     if n % 2000 == 0:
         print('Progress %d/%d....' % (n, data_loader.num_train))
+    # 验证这个数据集合不合规则，如果符合规则的话就输出这个example结果
     example = data_loader.get_train_example_with_idx(n)
+    # 不符合规则直接跳过
     if example == False:
         return
+    # 符合规则的进行图像拼接
     image_seq = concat_image_seq(example['image_seq'])
     intrinsics = example['intrinsics']
     fx = intrinsics[0, 0]
@@ -48,7 +53,8 @@ def dump_example(n, args):
     except OSError:
         if not os.path.isdir(dump_dir):
             raise
-    dump_img_file = dump_dir + '/%s.jpg' % example['file_name']
+    dump_img_file = dump_dir + '/%s' % example['file_name']
+    # dump_img_file = example['file_name']
     scipy.misc.imsave(dump_img_file, image_seq.astype(np.uint8))
     dump_cam_file = dump_dir + '/%s_cam.txt' % example['file_name']
     with open(dump_cam_file, 'w') as f:
@@ -89,8 +95,17 @@ def main():
                                         img_width=args.img_width,
                                         seq_length=args.seq_length)
 
+    if args.dataset_name == 'euroc':
+        from euroc.euroc_raw_loader import euroc_raw_loader
+        data_loader = euroc_raw_loader(args.dataset_dir,
+                                        img_height=args.img_height,
+                                        img_width=args.img_width,
+                                        seq_length=args.seq_length)
+
+    # 开启多线程去生成这些东西
     Parallel(n_jobs=args.num_threads)(delayed(dump_example)(n, args) for n in range(data_loader.num_train))
 
+    # 这些都搞完之后
     # Split into train/val
     np.random.seed(8964)
     subfolders = os.listdir(args.dump_root)

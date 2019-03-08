@@ -1,8 +1,9 @@
 python3 data/prepare_train_data.py --dataset_dir=/Volumes/Samsung_T5/ --dataset_name='kitti_raw_eigen' --dump_root=/Users/zhaobingfeng/ws/SfMLearner/dump_pics --seq_length=3 --img_width=416 --img_height=128 --num_threads=4
 
+python3 data/my_prepare_train_data.py --dataset_dir=/Volumes/Samsung_T5/EuRoc --dataset_name='euroc' --dump_root=/Users/zhaobingfeng/ws/SfMLearner/dump_pics2 --seq_length=3 --img_width=416 --img_height=128 --num_threads=1
+
 python3 test_kitti_pose.py --test_seq 9 --dataset_dir /Volumes/Samsung_T5/dataset/ --output_dir /Users/zhaobingfeng/ws/SfMLearner/out/ --ckpt_file /Users/zhaobingfeng/ws/SfMLearner/models/model-100280
 
 python3 ./train.py --dataset_dir=/home/lizhi216/meng/SfMLearner/dump_pics --checkpoint_dir=/home/lizhi216/meng/SfMLearner/saver --img_width=416 --img_height=128 --batch_size=4
-
 
 /Users/zhaobingfeng/ws/SfMLearner/hello.txt

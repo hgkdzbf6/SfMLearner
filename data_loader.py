@@ -44,14 +44,17 @@ class DataLoader(object):
                 image_seq, self.img_height, self.img_width, self.num_source)
 
         # Load camera intrinsics
+        # 读入相机的参数
         cam_reader = tf.TextLineReader()
         _, raw_cam_contents = cam_reader.read(cam_paths_queue)
         rec_def = []
+        # 读9个
         for i in range(9):
             rec_def.append([1.])
         raw_cam_vec = tf.decode_csv(raw_cam_contents, 
                                     record_defaults=rec_def)
         raw_cam_vec = tf.stack(raw_cam_vec)
+        # 重新更改矩阵形状
         intrinsics = tf.reshape(raw_cam_vec, [3, 3])
 
         # Form training batches
@@ -80,8 +83,9 @@ class DataLoader(object):
         intrinsics = tf.stack([r1, r2, r3], axis=1)
         return intrinsics
 
+    # 数据增强
     def data_augmentation(self, im, intrinsics, out_h, out_w):
-        # Random scaling
+        # Random scaling 随机缩放
         def random_scaling(im, intrinsics):
             batch_size, in_h, in_w, _ = im.get_shape().as_list()
             scaling = tf.random_uniform([2], 1, 1.15)
@@ -97,7 +101,7 @@ class DataLoader(object):
             intrinsics = self.make_intrinsics_matrix(fx, fy, cx, cy)
             return im, intrinsics
 
-        # Random cropping
+        # Random cropping 随机剪裁
         def random_cropping(im, intrinsics, out_h, out_w):
             # batch_size, in_h, in_w, _ = im.get_shape().as_list()
             batch_size, in_h, in_w, _ = tf.unstack(tf.shape(im))
@@ -111,6 +115,7 @@ class DataLoader(object):
             cy = intrinsics[:,1,2] - tf.cast(offset_y, dtype=tf.float32)
             intrinsics = self.make_intrinsics_matrix(fx, fy, cx, cy)
             return im, intrinsics
+
         im, intrinsics = random_scaling(im, intrinsics)
         im, intrinsics = random_cropping(im, intrinsics, out_h, out_w)
         im = tf.cast(im, dtype=tf.uint8)
