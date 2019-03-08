@@ -27,8 +27,6 @@ class kitti_raw_loader(object):
         self.collect_static_frames(static_frames_file)
         self.collect_train_frames()
 
-    # 这个里面是所有数据文件，按照日期，数据集和帧id的顺序排列
-    # 最后对做了更新
     def collect_static_frames(self, static_frames_file):
         with open(static_frames_file, 'r') as f:
             frames = f.readlines()
@@ -41,7 +39,6 @@ class kitti_raw_loader(object):
             for cid in self.cam_ids:
                 self.static_frames.append(drive + ' ' + cid + ' ' + curr_fid)
         
-    # 拿到训练的数据文件
     def collect_train_frames(self):
         all_frames = []
         for date in self.date_list:
@@ -58,7 +55,7 @@ class kitti_raw_loader(object):
                             frame_id = '%.10d' % n
                             all_frames.append(dr + ' ' + cam + ' ' + frame_id)
                         
-        # 删掉所有的静态帧
+
         for s in self.static_frames:
             try:
                 all_frames.remove(s)
@@ -130,7 +127,6 @@ class kitti_raw_loader(object):
         intrinsics = P_rect[:3, :3]
         return intrinsics
 
-    # 读入校验文件
     def read_raw_calib_file(self,filepath):
         # From https://github.com/utiasSTARS/pykitti/blob/master/pykitti/utils.py
         """Read in a calibration file and parse into a dictionary."""
@@ -147,7 +143,6 @@ class kitti_raw_loader(object):
                         pass
         return data
 
-    # 设定某一个矩阵，看起来像缩放因子。
     def scale_intrinsics(self, mat, sx, sy):
         out = np.copy(mat)
         out[0,0] *= sx

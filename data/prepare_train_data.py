@@ -4,6 +4,10 @@ import scipy.misc
 import numpy as np
 from glob import glob
 from joblib import Parallel, delayed
+
+import sys
+sys.path.append('.')
+sys.path.append('./data')
 import os
 
 parser = argparse.ArgumentParser()
